@@ -1,4 +1,4 @@
-import { PrismaClient } from "../src/generated/prisma";
+// import { PrismaClient } from "../src/generated/prisma";
 import pg from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
 import * as dotenv from "dotenv";
@@ -8,7 +8,7 @@ dotenv.config({ path: path.join(process.cwd(), ".env") });
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
+// const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log("🌱 Đang bắt đầu nạp 11.000 từ HSK vào Database...");
@@ -28,19 +28,19 @@ async function main() {
       // FIX CHUẨN: Chuyển đổi level an toàn. Nếu không phải số, mặc định là HSK 1
       const level = parseInt(item.level) || 1;
 
-      await prisma.hskWord.upsert({
-        where: { 
-          hanzi_level: { hanzi, level } 
-        },
-        update: {},
-        create: {
-          hanzi,
-          pinyin: item.pinyin || "",
-          definition_en: item.definition || "",
-          level,
-          audio_url: `https://raw.githubusercontent.com/hugolpz/audio-cmn/main/hsk/cmn-${hanzi}.mp3`,
-        },
-      });
+      // await prisma.hskWord.upsert({
+      //   where: { 
+      //     hanzi_level: { hanzi, level } 
+      //   },
+      //   update: {},
+      //   create: {
+      //     hanzi,
+      //     pinyin: item.pinyin || "",
+      //     definition_en: item.definition || "",
+      //     level,
+      //     audio_url: `https://raw.githubusercontent.com/hugolpz/audio-cmn/main/hsk/cmn-${hanzi}.mp3`,
+      //   },
+      // });
 
       count++;
       if (count % 500 === 0) console.log(`🚀 Đã nạp: ${count}/11000 từ...`);
@@ -55,5 +55,5 @@ async function main() {
 main()
   .catch((e) => console.error(e))
   .finally(async () => {
-    await prisma.$disconnect();
+    // await prisma.$disconnect();
   });
