@@ -1,4 +1,4 @@
-import { PrismaClient } from "@/generated/prisma"
+import { PrismaClient } from "@prisma/client" // ✅ Đã sửa: Import từ thư viện gốc
 import { Pool } from "pg"
 import { PrismaPg } from "@prisma/adapter-pg"
 
@@ -9,12 +9,12 @@ const connectionString = `${process.env.DATABASE_URL}`
 const pool = new Pool({ connectionString })
 const adapter = new PrismaPg(pool)
 
-// Khai báo global để chống lỗi tràn bộ nhớ (memory leak) khi Next.js hot-reload
+// Khai báo global để chống lỗi tràn bộ nhớ khi Next.js hot-reload
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
-// Khởi tạo Prisma với Adapter (Chuẩn Prisma 7)
+// Khởi tạo Prisma với Adapter
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({ adapter })
