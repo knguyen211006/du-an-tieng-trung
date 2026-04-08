@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+  // Đã bỏ dòng output cũ để Prisma dùng đường dẫn mặc định, tránh lỗi "ký ức cũ"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id                  String   @id @default(cuid())
+  name                String?
+  email               String?  @unique
+  image               String?
+  role                Role     @default(USER)
+  totalQuizScore      Int      @default(0)
+  masteredWordsCount  Int      @default(0)
+  currentStreak       Int      @default(0)
+  longestStreak       Int      @default(0)
+  lastActivityDate    DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  wordProgress        UserWordProgress[]
+  quizSessions        QuizSession[]
+  quizResults         QuizResult[]
+}
+
+model HskWord {
+  id                String   @id @default(cuid())
+  hanzi             String
+  pinyin            String
+  definition_en     String
+  definition_vi     String?
+  level             Int
+  part_of_speech    String?
+  example_sentences Json?
+  audio_url         String?
+  createdAt         DateTime @default(now())
+  progress          UserWordProgress[]
+  quizResults       QuizResult[]
+  @@unique([hanzi, level])
+}
+
+model UserWordProgress {
+  id            String   @id @default(cuid())
+  userId        String
+  wordId        String
+  familiarity   Int      @default(0)
+  lastReviewed  DateTime?
+  nextReview    DateTime?
+  correctCount  Int      @default(0)
+  wrongCount    Int      @default(0)
+  isMastered    Boolean  @default(false)
+  user          User     @relation(fields: [userId], references: [id])
+  word          HskWord  @relation(fields: [wordId], references: [id])
+  @@unique([userId, wordId])
+}
+
+model QuizSession {
+  id        String   @id @default(cuid())
+  userId    String
+  startedAt DateTime @default(now())
+  endedAt   DateTime?
+  user      User     @relation(fields: [userId], references: [id])
+  results   QuizResult[]
+}
+
+model QuizResult {
+  id         String   @id @default(cuid())
+  sessionId  String
+  wordId     String
+  userId     String
+  isCorrect  Boolean
+  selected   String
+  correct    String
+  createdAt  DateTime @default(now())
+  session    QuizSession @relation(fields: [sessionId], references: [id])
+  word       HskWord     @relation(fields: [wordId], references: [id])
+  user       User        @relation(fields: [userId], references: [id])
+}
+
+model AdminLog {
+  id        String   @id @default(cuid())
+  adminId   String
+  action    String
+  metadata  Json?
+  createdAt DateTime @default(now())
+}
+
+model AIGeneratedContent {
+  id        String   @id @default(cuid())
+  prompt    String   @unique
+  response  String   @db.Text
+  createdAt DateTime @default(now())
+  // Đã đảm bảo KHÔNG CÓ cột userId ở đây để tránh lỗi Prisma tìm cột ảo
+}
